@@ -116,7 +116,12 @@ def _run_1_n(image_source: ImageSource, face_process: FaceProcess, feature_data)
         frame_rate_statistics = _frame_rate_statistics_generator()
         while True:
             # 获取视频帧
+
+            fps = image_source.get(cv.CAP_PROP_FPS)
+            size = (int(image_source.get(cv.CAP_PROP_FRAME_WIDTH)),
+                    int(image_source.get(cv.CAP_PROP_FRAME_HEIGHT)))
             image = image_source.read()
+
             # 检测人脸
             faces_pos = arcface.detect_faces(image)
             if len(faces_pos) == 0:
@@ -202,6 +207,7 @@ def _run_m_n(image_source: ImageSource, face_process: FaceProcess,feature_data:s
             # 绘制人脸信息
             for face_info in faces_info.values():
                 _draw_face_info(image, face_info)
+
             flag = _show_image(image)
             if flag == 3:
                 break
@@ -249,7 +255,7 @@ def main() -> None:
             feature_data = profile["feature-data"]
         run = _run_1_n if args.single else _run_m_n
         with image_source:
-            run(image_source, face_process,feature_data)
+            run(image_source, face_process, feature_data)
 
 
 if __name__ == "__main__":

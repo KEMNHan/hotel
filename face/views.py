@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from face.models import User, Guest, Feature
+from face.models import User, Guest, Feature, Stay
 from typing import Dict
 import yaml
 from arcface import ArcFace
 from module.face_process import FaceProcess
 import os
 from django.conf import settings
-
+from datetime import datetime
 
 def reg(request):
     if request.method == "POST":
@@ -63,6 +63,8 @@ def check_out(request):
                 filename = os.path.join(settings.STATICFILES_DIRS[1], id)
                 if os.path.exists(filename):
                     os.remove(filename)
+                user = Stay.objects.get(id=id, status=True)
+                user.delete()
                 return JsonResponse({"status": "BS.200", "msg": "check out sucess."})
             except Feature.DoesNotExist:
                 return JsonResponse({"status": "BS.300", "msg": "id is not exists,fail to delete."})
@@ -71,9 +73,13 @@ def check_in(request):
     if request.method == "POST":
         id = request.POST.get('id')
         pic = request.FILES.get('face')
-        if pic:
+        room = request.POST.get('room')
+        fil = Guest.objects.filter(id=id)
+
+        if len(fil) == 0:
+            return JsonResponse({"status": "BS.500", "msg": "no reg"})
+        if pic and room:
             filename = os.path.join(settings.STATICFILES_DIRS[1], id)
-            print(filename)
             with open(filename, 'wb') as f:
                 for c in pic.chunks():
                     f.write(c)
@@ -86,6 +92,9 @@ def check_in(request):
             if res[0] == 1 and res[1]:
                 add_user = Feature(id=id, Value=res[1])
                 add_user.save()
+                add_user = Stay(id=id, intime=datetime.now(), outtime=datetime.now(), status=True, room=room)
+                add_user.save()
+
                 return JsonResponse({"status": "BS.200", "msg": "check in sucess."})
             else:
                 return JsonResponse({"status": "BS.400", "msg": "please check pic"})

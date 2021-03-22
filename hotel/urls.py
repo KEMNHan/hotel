@@ -22,5 +22,5 @@ urlpatterns = [
     path('reg/', reg),
     path('log/', log),
     path('checkout/', check_out),
-    path('checkin/',check_in)
+    path('checkin/', check_in)
 ]

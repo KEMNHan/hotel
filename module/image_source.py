@@ -170,7 +170,6 @@ class LocalCamera(ImageSource):
             self._cap = cv.VideoCapture(url.decode("gbk", "strict"))
         else:
             self._cap = cv.VideoCapture(0)
-
         if self._cap.isOpened():
             _logger.info("网络摄像头在线")
         else:
